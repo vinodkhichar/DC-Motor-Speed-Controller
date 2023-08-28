@@ -1,65 +1,65 @@
-// Programa para controle de Motores Utilizando Algoritimo PID
-// Set Point Alteravel através de potênciometro
+// Program for control of engines using PID algorithm
+// Set Point Alterable by Potentiometer
 
-// Mapeamento Hardware
 #define PWM_OUT       3
 #define ENCODER_A 2
 #define POT_IN A0
 
-// Variaveis Globais
+// Global Variables
 
-int output;           // define a saída de pwm
-int speed;        // velocidade do motor
-int lastError = 0;    // declara o ultimo erro
+int output;           // defines pwm output
+int speed;            // engine speed
+int lastError = 0;    // declares the last error
 
 int setpoint;
-int error = 0;           // erro atual
-int I_error = 0;         // ganho integral
-int D_error = 0;         // ganho derivativo
-float KP = 0.1;          // constante proporcional
-float KI = 0.0001;       // constante integrativa
-float KD = 0.001;        // constante derivativa
+int error = 0;     // current error
+int I_error = 0;   // full gain
+int D_error = 0;   // derivative gain
+float KP = 0.1;    // proportional constant
+float KI = 0.0001; // integrative constant
+float KD = 0.001;  // derivative constant
 
 
 void setup() {
   
-  Serial.begin(9600);                 // inicia a comunicação serial
+  Serial.begin(9600);               // starts serial communication
   
-  pinMode(ENCODER_A, INPUT);         // define o encoder para enviar dados
-  pinMode(POT_IN, INPUT);     // define o potenciometro para enviar dados e controlar o valor de set point
-  pinMode(PWM_OUT, OUTPUT);          // define a porta 3 para envio de sinal PWM para controle de velocidade
+  pinMode(ENCODER_A, INPUT);        // defines the encoder to send data
+  pinMode(POT_IN, INPUT);           // defines the potentiometer to send data and control the set point value
+  pinMode(PWM_OUT, OUTPUT);         // sets port 3 for sending PWM signal for speed control
   
-  output = 10;                    // define um valor inicial para pwm_valor 
-  analogWrite(PWM_OUT, output);   // controla o valor pwm através da saida porta 3
-  }
+  output = 10;                      // sets an initial value for pwm_valor 
+  analogWrite(PWM_OUT, output);     // controls the pwm value through port 3 output
+}
 
 void loop() {
-   // calcula o valor de set point apartir da leitura analógica do potenciometro
+   // calculates the set point value from the analogue reading of the potentiometer
   setpoint = map(analogRead(POT_IN), 0,1023,0,600);  
    
-  // realiza a leitura do encoder e transforma o valor dos pulsos em velocidade
+// performs the encoder reading and transforms the pulse value into speed
   speed = 19.1*((60*1000*10) / pulseIn(ENCODER_A, HIGH)); 
   
-  error = setpoint - speed; // calcula o valor do erro
+  error = setpoint - speed; // calculates the error value
    
-  I_error += error; // somatorio do erro
-  D_error = lastError - error; // variação do erro
-  // como esse loop vai ser chamado regularmente, podemos 
-  // supor que dt é constante e não incluilo nas contas acima.
-  // dt está junto de KP, KI, KD, de forma implicita.
+  I_error += error; // error summary
+  D_error = lastError - error; // error variation
   
-  // Implementação do Algorítimo PID
+  // as this loop will be called regularly, we can 
+  // assume that dt is constant and not include it in the accounts above.
+  // dt is next to KP, KI, KD, implicitly.
+  
+  // Implementation of the PID Algorithm
   output += KP*error + KI*I_error + KD*D_error;     
   
-  // limita a saida do controle para os valores vãlidos de pwm (10-255)
+  // limits control output to pwm valed values (10-255)
   output = constrain(output, 10, 255);
  
-  // envia o sinal para o "motor"
+  // sends the signal to the "motor"
   analogWrite(PWM_OUT, output);
   
-  // imprime os valores de speed e setpoint.
-  // valores em RPM
-  // utilize a função de gráficos do monitor serial!  
+  // prints the speed and setpoint values.
+  // RPM values
+  // use the graphics function of the serial monitor!  
   Serial.print(speed);     
   Serial.print(",");
   Serial.println(setpoint);  
